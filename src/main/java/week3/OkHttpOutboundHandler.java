@@ -23,7 +23,7 @@ public class OkHttpOutboundHandler {
                 .addHeader("bosco", fullRequest.headers().get("bosco"))
                 .url(backendServerUrl)
                 .build();
-
+        System.out.println("okhttp header --- " + request.headers());
         try (Response response = client.newCall(request).execute()) {
             return response.body().string();
         }
