@@ -1,3 +1,3 @@
 + run  HttpServer01
 + run  NettyHttpServer
-+ get  http://127.0.0.1:8808/
++ curl http://localhost:8808

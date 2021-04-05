@@ -9,6 +9,8 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.ReferenceCountUtil;
+import week3.filter.HeaderHttpRequestFilter;
+import week3.filter.HttpRequestFilter;
 
 import java.io.IOException;
 
@@ -19,7 +21,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
-//    private HttpResponseHeaderFilter filter = new HttpResponseHeaderFilter();
+    private HttpRequestFilter filter = new HeaderHttpRequestFilter();
+    private OkHttpOutboundHandler outboundHandler = new OkHttpOutboundHandler();
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -32,7 +35,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
         try {
             FullHttpRequest fullRequest = (FullHttpRequest) msg;
 
-            handlerDefault(fullRequest, ctx);
+            handlerDefault(fullRequest, ctx, filter);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -41,10 +44,10 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void handlerDefault(FullHttpRequest fullRequest, ChannelHandlerContext ctx) {
+    private void handlerDefault(FullHttpRequest fullRequest, ChannelHandlerContext ctx, HttpRequestFilter filter) {
         FullHttpResponse response = null;
         try {
-            String value = new OkHttpOutboundHandler().run("http://localhost:8801");
+            String value = outboundHandler.run(fullRequest, ctx, filter);
 
             response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(value.getBytes("UTF-8")));
             response.headers().set("Content-Type", "application/json");
